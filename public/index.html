@@ -896,9 +896,15 @@ async function adminSettings(){
         <label>Karta raqami<input id="scd" value="${esc(D.card||'')}" placeholder="8600 0000 0000 0000" inputmode="numeric"></label>
         <label>Karta egasi<input id="sh" value="${esc(D.holder||'')}" placeholder="FIO"></label>
       </div>
-      <div style="display:flex;gap:10px;margin-top:14px">
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
         <button class="primary" onclick="saveSettings()">💾 Saqlash</button>
+        <button onclick="backupData()">⬇️ Zaxira nusxa olish</button>
+        <button onclick="document.getElementById('resFile').click()">⬆️ Zaxiradan tiklash</button>
+        <input id="resFile" type="file" accept="application/json" style="display:none">
         <button class="danger" onclick="resetStore()">⚠️ Standart holatga qaytarish</button>
+      </div>
+      <div class="mut" style="margin-top:10px;font-size:12px">
+        💡 Render bepul planida server o'chganda ma'lumotlar yo'qolishi mumkin. Shu sababli har o'zgarishdan keyin "Zaxira nusxa olish" tugmasini bosing va JSON faylni saqlab qo'ying. Server qayta ishga tushganda shu faylni "Zaxiradan tiklash" orqali yuklang.
       </div>
     </div>
   `;
@@ -933,6 +939,37 @@ async function resetStore(){
   try{await api('/admin/reset',{method:'POST'});toast('Qaytarildi');await fetchStore(true);renderAdmin()}
   catch(e){toast(e.message,'err')}
 }
+
+async function backupData(){
+  if(!token) return toast('Avval kiring','err');
+  try{
+    const res=await fetch(API+'/admin/backup',{headers:{Authorization:'Bearer '+token}});
+    if(!res.ok) throw new Error((await res.json().catch(()=>({}))).error||'Xatolik');
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`bozor-store-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast('Zaxira nusxa yuklandi!');
+  }catch(e){toast(e.message,'err')}
+}
+
+document.addEventListener('change',async (e)=>{
+  if(e.target.id==='resFile'){
+    const f=e.target.files[0];
+    if(!f) return;
+    if(!confirm("Zaxiradan tiklanmoqda. Hozirgi barcha ma'lumotlar almashtiriladi. Davom etasizmi?")){e.target.value='';return}
+    try{
+      const txt=await f.text();
+      const data=JSON.parse(txt);
+      await api('/admin/restore',{method:'POST',body:data});
+      toast('Zaxiradan tiklandi!');
+      await fetchStore(true);renderAdmin();
+    }catch(err){toast('Fayl noto\'g\'ri: '+err.message,'err')}
+    e.target.value='';
+  }
+});
 
 async function adminAdmins(){
   let adm;try{adm=await api('/admin/admins')}catch(e){return `<div class="msg">${esc(e.message)}</div>`}

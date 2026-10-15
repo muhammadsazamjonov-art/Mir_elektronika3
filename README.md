@@ -1,47 +1,62 @@
 # Bozor Store — Elektronika do'koni
 
-Real vaqt rejimidagi elektronika do'koni veb-sayti. Admin paneli orqali mahsulotlar, narxlar, sozlamalar o'zgartirilsa, saytga kirgan barcha odamlarga darhol (real vaqtda) ko'rinadi.
+Real vaqt rejimidagi elektronika do'koni. Admin o'zgartirsa, saytga kirgan barcha odamlarga darhol ko'rinadi (SSE orqali).
 
-## Xususiyatlari
+## ⚡ Eng oson yo'l: Glitch.com (BEPUL, disk qo'shish kerak emas!)
 
-- 🛒 **Do'kon** — katalog, kategoriya, qidiruv, savat, promokodlar
-- 📦 **Buyurtmalar** — Payme/Click/Uzum Bank/Naqd/Karta usullari bilan, Telegramga yuborish
-- ⚡ **Real vaqt sinxronizatsiyasi** (Server-Sent Events) — admin o'zgartirsa barcha foydalanuvchilarga darhol ko'rinadi
-- 👥 **Ko'p admin** — admin qo'shish/o'chirish, parol o'zgartirish
-- 📊 **Admin panel** — barcha narsani boshqarish (maxsulotlar, kategoriyalar, promokodlar, buyurtmalar, sozlamalar, adminlar)
-- 📱 **Mobil moslashuvchan dizayn**
-- 🌙 Zamonaviy dark-tema dizayn
+Render bepul planida **Disk qo'shish pullik** va fayllar vaqtinchalik saqlanadi. Glitch da bunday muammo yo'q — ma'lumotlar avtomatik saqlanadi, hech qanday disk/karta kerak emas.
 
-## Default admin
+### Glitch ga 1 daqiqada joylash:
+
+1. **[glitch.com](https://glitch.com)** ga kiring (GitHub bilan kirish mumkin)
+2. Bosh sahifada **"New Project"** → **"Import from GitHub"** ni bosing
+3. Repo URL ni kiriting:
+   ```
+   https://github.com/muhammadsazamjonov-art/Mir_elektronika3
+   ```
+4. **OK** bosing — 30 soniyada sayt yuklanadi
+5. Yuqoridagi **"Share"** tugmasi → **"Live App"** havolasini oling — bu sizning doimiy saytingiz (masalan: `https://something.glitch.me`)
+6. **Tayyor!** Shu havolani odamlarga ulashing.
+
+Glitch da:
+- ✅ Ma'lumotlar doimiy saqlanadi (hech qachon o'chmaydi)
+- ✅ Hech qanday disk/karta sozlash kerak emas
+- ✅ Bepul (oyiga 1000 soat — bitta doimiy sayt uchun yetarli)
+- ✅ Har GitHub push'da avtomatik yangilash qo'lda (qayta import qilish kerak yoki Glitch orqali edit)
+
+## 🛡️ Backup (Zaxira nusxa) — HAR DOIM QILING!
+
+Admin panelga kiring → **⚙️ Sozlamalar**:
+- **⬇️ Zaxira nusxa olish** — barcha mahsulotlar, buyurtmalar, sozlamalar, adminlar bitta JSON faylga tushiriladi. Uni kompyuteringizga saqlab qo'ying.
+- **⬆️ Zaxiradan tiklash** — faylni tanlang va hamma narsa tiklanadi.
+
+⚠️ Har katta o'zgarishdan keyin zaxira olib qo'ying.
+
+## Admin panelga kirish
 
 ```
 Login: ibrohim
 Parol: 2013
 ```
 
-⚠️ Sayt ishga tushgandan keyin **Adminlar** bo'limida parolni almashtirish tavsiya qilinadi.
+Saytga kirib, yuqoridagi **"Admin panel"** tugmasini bosing yoki URL oxiriga `#admin` qo'shing.
 
-## Lokal ishga tushirish
+## Xususiyatlari
+
+- 🛒 Mahsulot katalogi, qidiruv, kategoriyalar, savat
+- 🎟️ Promokodlar va chegirmalar
+- 📦 Buyurtma tizimi (Payme/Click/Uzum/Naqd/Karta)
+- ⚡ Real vaqt sinxronizatsiya (admin o'zgartirsa hammada darhol ko'rinadi)
+- 📊 Admin panelda statistika
+- 👥 Ko'p admin qo'llab-quvvatlash (yangi adminlar qo'shish/o'chirish)
+- 🖼️ Rasmlar (base64 sifatida saqlanadi — alohida fayl serveri kerak emas)
+- 📱 Mobil mos dizayn
+
+## Lokalda ishlatish
 
 ```bash
 npm install
 npm start
 ```
 
-So'ng `http://localhost:3000` oching.
-
-## Render orqali onlayn joylash
-
-1. GitHub repository'ga push qiling
-2. [Render](https://render.com) da ro'yxatdan o'ting (GitHub bilan)
-3. **New → Web Service** → ushbu repo'ni tanlang
-4. Quyidagi sozlamalarni kiriting:
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-5. Deploy qiling — Render avtomatik ravishda HTTPS domen beradi
-
-Har GitHub push'dan keyin Render avtomatik redeploy qiladi.
-
-## Render Disk (ma'lumotlar saqlanishi uchun)
-
-> Data `data/store.json` faylida saqlanadi. Bepul Render rejasida fayl tizimi vaqtinchalik — restartda yo'qoladi. Doimiy saqlash uchun Render **Disk** (Persistent Disk) xususiyatini yoqing va `/opt/render/project/src/data` papkasiga ulang. Yoki tashqi baza (Postgres/Redis) ishlatish mumkin.
+Keyin `http://localhost:3000` ni oching.

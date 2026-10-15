@@ -1,11 +1,10 @@
 {
   "name": "bozor-store",
   "version": "1.0.0",
-  "description": "Bozor Store — elektronika do'koni, real vaqt admin paneli bilan",
+  "description": "Bozor Store — real vaqt elektronika do'koni",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2"

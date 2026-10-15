@@ -73,12 +73,28 @@ function loadData() {
 }
 
 let DATA = loadData();
+
+// Atomic save (write temp + rename) for better reliability
+function atomicSave(data) {
+  const tmp = DATA_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+  fs.renameSync(tmp, DATA_FILE);
+}
+
 function saveData() {
-  fs.writeFile(DATA_FILE, JSON.stringify(DATA, null, 2), (err) => {
-    if (err) console.error('saveData error:', err);
-  });
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    atomicSave(DATA);
+  } catch (err) {
+    console.error('saveData error:', err);
+  }
   broadcast({ type: 'update', ts: Date.now() });
 }
+
+// Save on shutdown/restart too
+process.on('SIGTERM', () => { try { atomicSave(DATA); } catch(e){} process.exit(0); });
+process.on('SIGINT', () => { try { atomicSave(DATA); } catch(e){} process.exit(0); });
 
 // ---------- Sessions ----------
 const sessions = new Map(); // token -> { username, createdAt }
@@ -320,6 +336,65 @@ app.delete('/api/admin/orders/:id', auth, (req, res) => {
   const before = DATA.orders.length;
   DATA.orders = DATA.orders.filter(x => x.id !== id);
   if (DATA.orders.length === before) return res.status(404).json({ error: 'Topilmadi' });
+  saveData();
+  res.json({ ok: true });
+});
+
+// Backup & Restore (Render disk yo'q paytda ma'lumotlarni saqlash uchun)
+app.get('/api/admin/backup', auth, (req, res) => {
+  const copy = JSON.parse(JSON.stringify(DATA));
+  const fileName = `bozor-store-backup-${new Date().toISOString().slice(0,10)}.json`;
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  res.send(JSON.stringify(copy, null, 2));
+});
+
+app.post('/api/admin/restore', auth, (req, res) => {
+  const data = req.body || {};
+  if (typeof data !== 'object' || !Array.isArray(data.products)) {
+    return res.status(400).json({ error: 'Noto\'g\'ri backup fayl formati' });
+  }
+  // Validate structure
+  const restored = { ...defaultData(), ...data };
+  // Sanitize
+  restored.products = Array.isArray(data.products) ? data.products.map(p => ({
+    id: p.id || ('p'+Date.now()+Math.floor(Math.random()*1000)),
+    n: String(p.n||'').slice(0,200),
+    code: String(p.code||''),
+    pr: Number(p.pr)||0,
+    c: String(p.c||'').slice(0,100),
+    d: String(p.d||'').slice(0,1000),
+    img: String(p.img||'')
+  })) : [];
+  restored.promo = Array.isArray(data.promo) ? data.promo.filter(p=>p.c&&p.pct).map(p=>({c:String(p.c).toUpperCase(),pct:Math.max(1,Math.min(90,Number(p.pct)||0))})) : [];
+  restored.categories = Array.isArray(data.categories) ? data.categories.filter(c=>typeof c==='string'&&c.trim()) : ['Hammasi'];
+  if (!restored.categories.includes('Hammasi')) restored.categories.unshift('Hammasi');
+  restored.orders = Array.isArray(data.orders) ? data.orders : [];
+  // Keep current session's admin from existing if restoring; merge admins
+  if (Array.isArray(data.admins) && data.admins.length > 0) {
+    restored.admins = data.admins.map(a => ({
+      username: String(a.username||''),
+      password: String(a.password||''),
+      createdAt: Number(a.createdAt)||Date.now()
+    })).filter(a=>a.username && a.password);
+    // Ensure current admin exists in restored data
+    if (!restored.admins.find(a => a.username === req.admin.username)) {
+      restored.admins.push({ username: req.admin.username, password: '2013', createdAt: Date.now() });
+    }
+  } else {
+    restored.admins = DATA.admins;
+  }
+  restored.storeName = String(data.storeName||'Bozor Store').slice(0,100);
+  restored.storeTagline = String(data.storeTagline||'').slice(0,300);
+  restored.phone = String(data.phone||'');
+  restored.tg = String(data.tg||'bozorstore').replace(/^@/,'');
+  restored.card = String(data.card||'');
+  restored.holder = String(data.holder||'');
+  restored.logo = String(data.logo||'');
+  restored.rate = Number(data.rate)||0;
+  restored.currency = String(data.currency||'UZS');
+  restored.currencySymbol = String(data.currencySymbol||"so'm");
+  DATA = restored;
   saveData();
   res.json({ ok: true });
 });
