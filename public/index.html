@@ -212,6 +212,12 @@ td img{width:40px;height:40px;object-fit:cover;border-radius:8px}
 
 <main id="app"></main>
 
+<div id="deployBanner" style="display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:100;background:linear-gradient(135deg,#ff8c00,#ffb347);color:#1a0f00;padding:12px 20px;border-radius:14px;box-shadow:0 0 30px rgba(255,140,0,.5);align-items:center;gap:12px;font-weight:700;font-size:14px;max-width:calc(100vw - 24px)">
+  🚀 Saytni hozir onlayn qiling — mutlaqo bepul!
+  <a href="/deploy" style="background:#1a0f00;color:#ff8c00;padding:8px 14px;border-radius:10px;text-decoration:none;white-space:nowrap">1-bosishda joylash →</a>
+  <button onclick="document.getElementById('deployBanner').style.display='none'" style="background:none;border:0;color:#1a0f00;font-size:22px;cursor:pointer;padding:0 4px;margin-left:4px">×</button>
+</div>
+
 <div id="cartbar">
   <div class="w">
     <div>
@@ -657,7 +663,9 @@ async function adminDashboard(){
     <div class="hd" style="margin-bottom:20px"><div>
       <h2>Boshqaruv paneli</h2>
       <div class="mut"><span class="live">Real vaqt rejimi yoqilgan</span> — admin o'zgartirsa hamma foydalanuvchilarga darhol ko'rinadi</div>
-    </div></div>
+    </div>
+      <a href="/deploy" target="_blank" class="btn primary" style="text-decoration:none">🚀 Onlayn joylash</a>
+    </div>
     <div class="grid2">
       ${views.map(v=>`<div class="box" style="margin:0"><div class="mut" style="font-size:12px">${v.i} ${esc(v.t)}</div><div style="font-size:28px;font-weight:700;margin-top:6px">${esc(String(v.v))}</div></div>`).join('')}
     </div>
@@ -1077,6 +1085,15 @@ function render(){
 
 // ==================== INIT ====================
 window.addEventListener('hashchange',render);
+// Show deploy banner only on non-deployed (preview/localhost) hosts
+(function(){
+  const h=location.hostname;
+  const deployed = /(glitch\.me|onrender\.com|netlify\.app|vercel\.app|herokuapp\.com)$/.test(h) && !h.includes('e2b');
+  if(!deployed && h!=='deploy'){
+    const b=document.getElementById('deployBanner');
+    if(b){b.style.display='flex';setTimeout(()=>{if(b)b.style.display='none'},45000)}
+  }
+})();
 fetchStore().then(()=>{connectSSE();render()});
 </script>
 </body>

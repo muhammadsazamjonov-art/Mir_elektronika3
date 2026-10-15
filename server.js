@@ -409,6 +409,10 @@ app.post('/api/admin/reset', auth, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/deploy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'deploy.html'));
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

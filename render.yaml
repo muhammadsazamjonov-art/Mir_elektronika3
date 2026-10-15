@@ -5,10 +5,10 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /api/store
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
-    disk:
-      name: data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+      - key: PORT
+        value: "10000"
